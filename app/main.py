@@ -27,7 +27,7 @@ from .store import Store
 logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
 logger = logging.getLogger("ycradar")
 
-APP_VERSION = "0.1.0"
+APP_VERSION = "1.0.0"
 
 # ---- application state -----------------------------------------------------
 store: Store = None  # type: ignore[assignment]
@@ -197,7 +197,7 @@ async def manifest():
         "protocol_version": "1.0",
         "agent_version": APP_VERSION,
         "metadata": {
-            "name": "YC Radar",
+            "name": "SONAR",
             "short_description": "Monitors YC + a16z Speedrun launches and founders who announce on X/LinkedIn before the official announcement.",
             "description": (
                 "<p>YC Radar polls the YC directory, the a16z Speedrun directory, X and LinkedIn "
@@ -255,6 +255,7 @@ class RunRequest(BaseModel):
     user: dict = {}
     messages: list[dict] = []
     parameters: dict = {}
+    execution: dict = {}
 
 
 def _auth_pond(authorization: str | None = Header(default=None),
