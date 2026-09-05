@@ -1,0 +1,338 @@
+[
+  {
+    "handle": "adalat_ai",
+    "slack_ts": null,
+    "first_seen": "2026-09-05 22:30:28",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Company:* adalat_ai"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Batch:* YC S26"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Founder:* @adalat_ai"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Source:* X"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Status:* \u26a1 Founder announced / not yet officially announced by YC"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "\ud83d\udd17 *Link:* <https://x.com/adalat_ai>"
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": "Detected: Sep 5, 2026, 11:07 PM PT"
+          }
+        ]
+      }
+    ],
+    "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC\n\nCompany: adalat_ai\nBatch: YC S26\nFounder: adalat_ai\nSource: X\nStatus: \u26a1 Founder announced / not yet officially announced by YC\nLink: https://x.com/adalat_ai\nDetected: Sep 5, 2026, 11:07 PM PT"
+  },
+  {
+    "handle": "mynameisyahia",
+    "slack_ts": "1788647475.243309",
+    "first_seen": null,
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Company:* mynameisyahia"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Batch:* YC S26"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Founder:* @mynameisyahia"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Source:* X"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Status:* \u26a1 Founder announced / not yet officially announced by YC"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "\ud83d\udd17 *Link:* <https://x.com/mynameisyahia>"
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": "Detected: Sep 5, 2026, 11:07 PM PT"
+          }
+        ]
+      }
+    ],
+    "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC\n\nCompany: mynameisyahia\nBatch: YC S26\nFounder: mynameisyahia\nSource: X\nStatus: \u26a1 Founder announced / not yet officially announced by YC\nLink: https://x.com/mynameisyahia\nDetected: Sep 5, 2026, 11:07 PM PT"
+  },
+  {
+    "handle": "zmrishh",
+    "slack_ts": "1788647473.026499",
+    "first_seen": null,
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Company:* zmrishh"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Batch:* YC S26"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Founder:* @zmrishh"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Source:* X"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Status:* \u26a1 Founder announced / not yet officially announced by YC"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "\ud83d\udd17 *Link:* <https://x.com/zmrishh>"
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": "Detected: Sep 5, 2026, 11:07 PM PT"
+          }
+        ]
+      }
+    ],
+    "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC\n\nCompany: zmrishh\nBatch: YC S26\nFounder: zmrishh\nSource: X\nStatus: \u26a1 Founder announced / not yet officially announced by YC\nLink: https://x.com/zmrishh\nDetected: Sep 5, 2026, 11:07 PM PT"
+  },
+  {
+    "handle": "georgejeffersn",
+    "slack_ts": "1788647475.897629",
+    "first_seen": null,
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Company:* georgejeffersn"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Batch:* YC S26"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Founder:* @georgejeffersn"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Source:* X"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Status:* \u26a1 Founder announced / not yet officially announced by YC"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "\ud83d\udd17 *Link:* <https://x.com/georgejeffersn>"
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": "Detected: Sep 5, 2026, 11:07 PM PT"
+          }
+        ]
+      }
+    ],
+    "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC\n\nCompany: georgejeffersn\nBatch: YC S26\nFounder: georgejeffersn\nSource: X\nStatus: \u26a1 Founder announced / not yet officially announced by YC\nLink: https://x.com/georgejeffersn\nDetected: Sep 5, 2026, 11:07 PM PT"
+  },
+  {
+    "handle": "madebythomasai",
+    "slack_ts": "1788647477.878669",
+    "first_seen": null,
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Company:* madebythomasai"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Batch:* YC S26"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Founder:* @madebythomasai"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Source:* X"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Status:* \u26a1 Founder announced / not yet officially announced by YC"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "\ud83d\udd17 *Link:* <https://x.com/madebythomasai>"
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": "Detected: Sep 5, 2026, 11:07 PM PT"
+          }
+        ]
+      }
+    ],
+    "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC\n\nCompany: madebythomasai\nBatch: YC S26\nFounder: madebythomasai\nSource: X\nStatus: \u26a1 Founder announced / not yet officially announced by YC\nLink: https://x.com/madebythomasai\nDetected: Sep 5, 2026, 11:07 PM PT"
+  },
+  {
+    "handle": "willowvoiceai",
+    "slack_ts": null,
+    "first_seen": "2026-09-05 22:30:28",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Company:* willowvoiceai"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Batch:* YC S26"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Founder:* @willowvoiceai"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Source:* X"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Status:* \u26a1 Founder announced / not yet officially announced by YC"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "\ud83d\udd17 *Link:* <https://x.com/willowvoiceai>"
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": "Detected: Sep 5, 2026, 11:07 PM PT"
+          }
+        ]
+      }
+    ],
+    "text": "\ud83d\udd25 EARLY YC SIGNAL \u2014 Founder Announced Before YC\n\nCompany: willowvoiceai\nBatch: YC S26\nFounder: willowvoiceai\nSource: X\nStatus: \u26a1 Founder announced / not yet officially announced by YC\nLink: https://x.com/willowvoiceai\nDetected: Sep 5, 2026, 11:07 PM PT"
+  }
+]
