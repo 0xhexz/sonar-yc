@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Env / secrets
+.env
+
+# Data / state
+data/
+*.db
+*.db-*
+
+# Playwright / cache
+node_modules/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Test / build artifacts
+.pytest_cache/
+htmlcov/
+.coverage
+dist/
+build/
+brand/landing.html

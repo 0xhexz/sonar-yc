@@ -1,0 +1,9 @@
+=== SCAN 1 (all 4 sources, Algolia YC) ===
+signals: {'speedrun': 261, 'yc': 150, 'x': 166, 'linkedin': 50}
+alerts: 12 | errors: none
+CONFIRMED sample: ['Lumeria', 'Sinter']
+SPEEDRUN sample: ['Hotbox', 'Baro']
+EARLY count: 8
+EARLY handles: ['zmrishh', 'mynameisyahia', 'StackDhruv', 'GeorgeJeffersn', 'esthor']
+=== SCAN 2 (dedupe proof) ===
+alerts: 11

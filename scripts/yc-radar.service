@@ -1,0 +1,21 @@
+# systemd unit for YC Radar (non-Docker use)
+# 1) sudo cp scripts/yc-radar.service /etc/systemd/system/
+# 2) edit WorkingDirectory/User/EnvironmentFile paths below
+# 3) sudo systemctl daemon-reload && sudo systemctl enable --now yc-radar
+
+[Unit]
+Description=YC Radar monitor bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hex
+WorkingDirectory=/home/hex/yc-radar
+EnvironmentFile=/home/hex/yc-radar/.env
+ExecStart=/home/hex/yc-radar/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

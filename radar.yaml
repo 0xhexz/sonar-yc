@@ -1,0 +1,41 @@
+# ============================================================================
+# yc-radar tuning file — editing this is a config change, never a code change.
+#
+# Every section below is optional; delete a section and the shipped defaults
+# in app/precision.py take over. Scores and floors are ours: tuned on our
+# own keyword set and scan cadence.
+# ============================================================================
+
+precision_gate:
+  # A post matching any of these is dead on arrival, no matter how strongly
+  # it scores otherwise: these phrases mean SOMEONE OTHER THAN THE FOUNDER is
+  # speaking (congratulations, referrals, investors, advice, anniversaries).
+  disqualifiers:
+    - "congratulations to"
+    - "shoutout to"
+    - "how to get into yc"
+    - "how i got into yc"
+    - "i invested early in"
+    - "years ago today"
+
+  # Announcement cues and their weights (0-1). The STRONGEST match counts —
+  # never the sum — so repetition cannot inflate a weak post.
+  cues:
+    - ["got into y( ?c| combinator)", 1.0]
+    - ["accepted (into|to|by) (yc|y combinator)", 1.0]
+    - ["backed by (yc|y combinator)", 0.9]
+    - ["joining (the )?(yc|y combinator|speedrun)", 0.9]
+    - ["got into speedrun", 1.0]
+
+  # Routing floors. >= alert goes to Slack; >= recap lands in the end-of-scan
+  # recap (interesting but not certain); below either is dropped silently.
+  floors:
+    alert: 0.55
+    recap: 0.35
+
+# Cadence and cost knobs also live here (mirrors the .env values; .env wins).
+cadence:
+  yc_hours: 8
+  speedrun_hours: 8
+  x_minutes: 30
+  linkedin_hours: 24

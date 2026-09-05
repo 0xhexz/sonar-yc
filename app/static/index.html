@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONAR · Hear the launch before the world does</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A1628;--surface:#122238;--line:#1E3A5F;--ink:#E8F1FA;--muted:#7FA0C0;
+  --ping:#4ADE80;--echo:#38BDF8;--warn:#FBBF24;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:"Space Grotesk",system-ui,sans-serif;line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:2.5rem 1.5rem 5rem}
+/* depth-grid backdrop (subtle, ours) */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(56,189,248,.05), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(74,222,128,.04), transparent 45%),
+    repeating-linear-gradient(0deg, transparent 0 47px, rgba(30,58,95,.25) 47px 48px),
+    repeating-linear-gradient(90deg, transparent 0 47px, rgba(30,58,95,.25) 47px 48px);}
+.wrap{position:relative;z-index:1}
+/* ---------- hero ---------- */
+header{display:flex;align-items:center;gap:1.4rem;margin-bottom:2.2rem}
+.sweep{width:84px;height:84px;border-radius:50%;border:1px solid var(--line);position:relative;overflow:hidden;flex:none;
+  box-shadow:0 0 24px rgba(74,222,128,.12)}
+.sweep::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at center, rgba(74,222,128,.14), transparent 62%)}
+.sweep::after{content:"";position:absolute;inset:0;
+  background:conic-gradient(from 0deg, rgba(74,222,128,.45), transparent 30%);
+  animation:sweep 2.4s linear infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.sweep::after{animation:none}}
+.wordmark{font-size:2rem;font-weight:700;letter-spacing:.22em}
+.tag{color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:.9rem}
+.pill{display:inline-block;margin-top:.4rem;font-size:.72rem;letter-spacing:.08em;color:var(--ping);
+  border:1px solid var(--ping);border-radius:999px;padding:.12rem .7rem;background:rgba(74,222,128,.08)}
+/* ---------- type ---------- */
+h2{font-size:1rem;color:var(--echo);letter-spacing:.09em;text-transform:uppercase;margin:0 0 1rem}
+section{margin-top:3.2rem}
+p.lead{font-size:1.18rem;max-width:46ch}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.9rem;margin-top:1.1rem}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem}
+.stat b{font-size:1.55rem;display:block;font-weight:700}
+.stat b em{font-style:normal;color:var(--ping)}
+.stat span{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.07em}
+/* ---------- pings ---------- */
+.ping{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--ping);
+  border-radius:10px;padding:1rem 1.15rem;margin:.85rem 0}
+.ping.echo{border-left-color:var(--echo)}
+.ping header{display:flex;gap:.6rem;margin:0 0 .45rem;font-size:.85rem;align-items:center;justify-content:space-between}
+.badge{font-size:.72rem;letter-spacing:.09em;border-radius:999px;padding:.13rem .7rem;font-weight:600}
+.b-early{color:var(--ping);border:1px solid var(--ping);background:rgba(74,222,128,.09)}
+.b-echo{color:var(--echo);border:1px solid var(--echo);background:rgba(56,189,248,.09)}
+time{color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:.74rem}
+.ping p{font-size:.96rem}
+.src{color:var(--muted);font-size:.8rem;font-family:"JetBrains Mono",monospace}
+/* ---------- pipeline ---------- */
+.pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem;margin-top:1rem}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.8rem .9rem}
+.step b{color:var(--echo);font-family:"JetBrains Mono",monospace;font-size:.8rem}
+.step p{font-size:.85rem;color:var(--muted);margin-top:.25rem}
+/* ---------- code ---------- */
+pre{background:#0C1930;border:1px solid var(--line);border-radius:10px;padding:1.1rem 1.2rem;
+  overflow:auto;font-family:"JetBrains Mono",monospace;font-size:.84rem;color:var(--muted);line-height:1.7}
+pre b{color:var(--ping);font-weight:500}
+pre i{color:var(--echo);font-style:normal}
+/* ---------- table ---------- */
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;overflow:hidden;font-size:.9rem}
+th,td{text-align:left;padding:.55rem .8rem;border-bottom:1px solid rgba(30,58,95,.6)}
+th{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em}
+tr:last-child td{border-bottom:0}
+.yes{color:var(--ping)} .mono{font-family:"JetBrains Mono",monospace;font-size:.8rem}
+footer{margin-top:4rem;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);
+  padding-top:1.3rem;display:flex;gap:1.2rem;flex-wrap:wrap}
+a{color:var(--echo);text-decoration:none} a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="sweep" aria-hidden="true"></div>
+  <div>
+    <div class="wordmark">SONAR</div>
+    <div class="tag">launch intelligence · yc + speedrun</div>
+    <span class="pill">agent online</span>
+  </div>
+</header>
+
+<p class="lead">Every startup sends a signal. Founders announce on X, LinkedIn and Hacker
+News <strong>days</strong> before any directory lists them. SONAR hears those signals and
+pings your Slack — so your outreach lands while everyone else is still refreshing a webpage.</p>
+
+<section id="gap">
+  <h2>The gap, in days</h2>
+  <div class="grid">
+    <div class="stat"><b>Day <em>0</em></b><span>founder posts · SONAR pings you</span></div>
+    <div class="stat"><b>Day 5–11</b><span>directory lists them</span></div>
+    <div class="stat"><b>Day 12+</b><span>everyone else finds out</span></div>
+  </div>
+</section>
+
+<section id="pings">
+  <h2>What a ping looks like</h2>
+  <div class="ping">
+    <header><span class="badge b-early">🔥 EARLY RETURN</span><time>09:14 PT</time></header>
+    <p><b>Adalat AI</b> — "Adalat AI is now backed by Y Combinator. We're the first
+    nonprofit in the batch…"</p>
+    <span class="src">via X · @handle · not yet in any directory · gate 0.98</span>
+  </div>
+  <div class="ping echo">
+    <header><span class="badge b-echo">⚡ ECHO-CONFIRM</span><time>14:03 PT</time></header>
+    <p><b>Adalat AI</b> is now listed in the directory · <b>6 days</b> after SONAR heard it.</p>
+    <span class="src">replied inside the original ping's thread — the bot proves its own recall</span>
+  </div>
+</section>
+
+<section id="pipeline">
+  <h2>From post to ping</h2>
+  <div class="pipe">
+    <div class="step"><b>1 · LISTEN</b><p>Five sources swept at their own cadence — directories slow, social fast.</p></div>
+    <div class="step"><b>2 · GATE</b><p>Weighted cues, hard disqualifiers, founder-voice check. Free layer, catches lookalikes.</p></div>
+    <div class="step"><b>3 · UNDERSTAND</b><p>LLM pass extracts company + batch from however the founder wrote it.</p></div>
+    <div class="step"><b>4 · CROSSREF</b><p>Checked against the directory that governs the programme — unknown never counts as early.</p></div>
+    <div class="step"><b>5 · PING</b><p>Slack alert, early first. Borderline posts land in the recap, not the void.</p></div>
+  </div>
+</section>
+
+<section id="truth">
+  <h2>Measured, not claimed</h2>
+  <div class="grid">
+    <div class="stat"><b><em>100%</em></b><span>gate precision (20-case pack)</span></div>
+    <div class="stat"><b><em>100%</em></b><span>gate recall</span></div>
+    <div class="stat"><b><em>411</em></b><span>companies tracked live</span></div>
+    <div class="stat"><b><em>25</em></b><span>early returns awaiting echo</span></div>
+  </div>
+  <p class="muted" style="margin-top:.8rem">Run the harness yourself:
+  <span class="mono">python scripts/measure_precision.py</span> — exits non-zero below the floor.</p>
+</section>
+
+<section id="sources">
+  <h2>Where it listens</h2>
+  <table>
+    <tr><th>Source</th><th>Catches</th><th>Coverage</th><th>Cost</th></tr>
+    <tr><td><b>YC Directory</b></td><td>every new listing, newest first</td><td class="mono">Algolia · self-healing key</td><td class="yes">free</td></tr>
+    <tr><td><b>Speedrun (a16z)</b></td><td>SR001–SR007 cohorts</td><td class="mono">REST · 261 tracked</td><td class="yes">free</td></tr>
+    <tr><td><b>Hacker News</b></td><td>"Launch HN (YC S26)" posts</td><td class="mono">Algolia HN API</td><td class="yes">free</td></tr>
+    <tr><td><b>X</b></td><td>founder announcements</td><td class="mono">fuel-ledger: best provider auto-picked</td><td class="mono">$0 or pennies</td></tr>
+    <tr><td><b>LinkedIn</b></td><td>launch posts + new pages</td><td class="mono">Apify · capped</td><td class="mono">~$3.5/mo</td></tr>
+  </table>
+  <p class="muted" style="margin-top:.7rem">X has no free API anymore. SONAR keeps a
+  <strong>fuel ledger</strong>: it tries the cheapest healthy provider, demotes an exhausted
+  one automatically, and falls back to a free discovery chain. You never pick a provider.</p>
+</section>
+
+<section id="run">
+  <h2>Ready in one minute</h2>
+<pre>
+git clone <i>&lt;your-repo&gt;</i> && cd sonar
+<i>python scripts/setup_wizard.py</i>      <b># token → pick channel → test ping → .env</b>
+<i>.venv/bin/python -m app.main</i>        <b># always-on · pings per-source cadence</b>
+
+<i># prove the memory works — second run must say 0 new:</b>
+<i>python scripts/prove_dedupe.py</i>
+</pre>
+</section>
+
+<footer>
+  <span>🛰️ SONAR · hear the launch before the world does</span>
+  <a href="/dashboard">scope</a>
+  <a href="/manifest">agent manifest</a>
+  <a href="/healthz">health</a>
+  <a href="https://github.com/0xhexz/sonar-yc">source</a>
+</footer>
+
+</div>
+</body>
+</html>

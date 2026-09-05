@@ -1,0 +1,13 @@
+services:
+  yc-radar:
+    build: .
+    container_name: yc-radar
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DATA_DIR=/data
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
