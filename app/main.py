@@ -198,6 +198,7 @@ async def manifest():
         "agent_version": APP_VERSION,
         "metadata": {
             "name": "SONAR",
+            "logo_url": "https://sonar-yc.vercel.app/logo.svg",
             "short_description": "Monitors YC + a16z Speedrun launches and founders who announce on X/LinkedIn before the official announcement.",
             "description": (
                 "<p>YC Radar polls the YC directory, the a16z Speedrun directory, X and LinkedIn "

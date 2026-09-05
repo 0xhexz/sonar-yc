@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- SONAR logo: dark-ocean disc, scope rings, green sweep wedge, ping dot -->
+  <defs>
+    <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#122238"/>
+      <stop offset="1" stop-color="#0A1628"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4ADE80" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#4ADE80" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- rounded-square background -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#ocean)"/>
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="#1E3A5F" stroke-width="6"/>
+
+  <!-- scope rings -->
+  <circle cx="256" cy="256" r="196" fill="none" stroke="#1E3A5F" stroke-width="10"/>
+  <circle cx="256" cy="256" r="132" fill="none" stroke="#1E3A5F" stroke-width="8"/>
+  <circle cx="256" cy="256" r="68"  fill="none" stroke="#1E3A5F" stroke-width="6"/>
+
+  <!-- crosshair -->
+  <line x1="256" y1="46"  x2="256" y2="466" stroke="#1E3A5F" stroke-width="6"/>
+  <line x1="46"  y1="256" x2="466" y2="256" stroke="#1E3A5F" stroke-width="6"/>
+
+  <!-- sweep wedge (from center, fading) -->
+  <path d="M256 256 L256 60 A196 196 0 0 1 396 116 Z" fill="url(#sweep)"/>
+
+  <!-- ping dot (the return signal) -->
+  <circle cx="330" cy="330" r="26" fill="#4ADE80"/>
+  <circle cx="330" cy="330" r="44" fill="none" stroke="#4ADE80" stroke-opacity="0.35" stroke-width="10"/>
+</svg>
