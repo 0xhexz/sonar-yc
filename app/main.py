@@ -330,7 +330,10 @@ async def get_task(task_id: str):
     store = _task_store()
     stored = store.get(task_id) or store.get(f"task-{task_id}")
     if not stored:
-        _fail(404, "not_found", f"Unknown task_id: {task_id}")
+        # NB: 404 here reads as "route missing" to Pond's reachability checker
+        # (their convention: 422 = endpoint exists, bad input). An unknown id
+        # IS bad input, so answer 422 with the standard error shape.
+        _fail(422, "invalid_request", f"Unknown or expired task_id: {task_id}")
     return {
         "run_id": stored["run_id"],
         "task_id": task_id,
