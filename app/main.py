@@ -198,12 +198,16 @@ def _check_trigger_token(body: TriggerBody | None) -> None:
 
 @app.post("/trigger")
 async def trigger(body: TriggerBody | None = None):
-    """External-cron endpoint: runs one full scan synchronously."""
+    """External-cron endpoint. Fire-and-forget: 202 immediately, the scan
+    runs in the background and alerts land in Slack. (cron-job.org times
+    out at 30s; a full scan takes 2-4 min, so sync responses get cut.)"""
     _check_trigger_token(body)
-    result = await scan_now(only=(body.only if body else None))
-    if result is None:
-        return {"ok": False}
-    return {"ok": True, "alerts": len(result.alerts), "counts": result.counts}
+    import asyncio as _aio
+
+    task_id = f"cron-{int(__import__('time').time())}"
+    _task_write(task_id, task_id, "running", [{"type": "text", "text": "Cron scan started."}])
+    _aio.create_task(_run_scan_task(task_id, task_id, None))
+    return {"ok": True, "task_id": task_id, "status": "running"}
 
 
 # ---- Pond Protocol V1 ------------------------------------------------------
