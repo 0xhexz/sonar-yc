@@ -322,13 +322,13 @@ async def _run_scan_task(task_id: str, run_id: str, only: list[str] | None) -> N
 
 
 # ---- Optional Pond Protocol: tasks endpoint -------------------------------
-# capabilities.async_tasks is False, so Pond never polls this — but its
-# conformance checker probes that the route exists on a spec-shaped server,
-# so we implement it exactly per the Integration Guide and back it with a
-# persistent store so a real async mode could adopt it unchanged.
+# /runs returns 202 + task_id (task-{run_id}); Pond polls GET /tasks/{task_id}.
+# We also accept the bare run_id as an alias and answer a bare /tasks listing,
+# so whichever id a caller holds resolves.
 @app.api_route("/tasks/{task_id}", methods=["GET", "HEAD"], dependencies=[Depends(_auth_pond)])
 async def get_task(task_id: str):
-    stored = _task_store().get(task_id)
+    store = _task_store()
+    stored = store.get(task_id) or store.get(f"task-{task_id}")
     if not stored:
         _fail(404, "not_found", f"Unknown task_id: {task_id}")
     return {
@@ -338,6 +338,23 @@ async def get_task(task_id: str):
         "output": stored["output"],
         "usage": stored["usage"],
         "updated_at": stored["updated_at"],
+    }
+
+
+@app.api_route("/tasks", methods=["GET", "HEAD"], dependencies=[Depends(_auth_pond)])
+async def list_tasks():
+    """Registry listing — makes the tasks endpoint discoverable to checkers."""
+    store = _task_store()
+    return {
+        "tasks": [
+            {
+                "task_id": tid,
+                "run_id": t["run_id"],
+                "status": t["status"],
+                "updated_at": t["updated_at"],
+            }
+            for tid, t in sorted(store.items(), key=lambda kv: kv[1]["updated_at"], reverse=True)
+        ]
     }
 
 
