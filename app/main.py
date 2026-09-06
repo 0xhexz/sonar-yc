@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import logging
 import re
+import json
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -198,7 +200,7 @@ async def manifest():
         "agent_version": APP_VERSION,
         "metadata": {
             "name": "SONAR",
-            "logo_url": "https://sonar-yc.vercel.app/logo.svg",
+            "logo_url": "https://sonar-yc.vercel.app/logo.png",
             "short_description": "Monitors YC + a16z Speedrun launches and founders who announce on X/LinkedIn before the official announcement.",
             "description": (
                 "<p>YC Radar polls the YC directory, the a16z Speedrun directory, X and LinkedIn "
@@ -241,7 +243,7 @@ async def manifest():
         "output_modes": ["text/markdown"],
         "limits": {
             "max_request_bytes": 1_048_576,
-            "max_run_seconds": 120,
+            "max_run_seconds": 600,
             "max_attachment_bytes": 1_048_576,
         },
     }
@@ -306,6 +308,38 @@ async def create_run(run: RunRequest, idempotency_key: str | None = Header(defau
         "output": [{"type": "text", "text": summary}],
         "usage": {"unit_of_measurement": "scan", "quantity": 1},
     }
+
+
+# ---- Optional Pond Protocol: tasks endpoint -------------------------------
+# capabilities.async_tasks is False, so Pond never polls this — but its
+# conformance checker probes that the route exists on a spec-shaped server,
+# so we implement it exactly per the Integration Guide and back it with a
+# persistent store so a real async mode could adopt it unchanged.
+@app.get("/tasks/{task_id}", dependencies=[Depends(_auth_pond)])
+async def get_task(task_id: str):
+    stored = _task_store().get(task_id)
+    if not stored:
+        _fail(404, "not_found", f"Unknown task_id: {task_id}")
+    return {
+        "run_id": stored["run_id"],
+        "task_id": task_id,
+        "status": stored["status"],
+        "output": stored["output"],
+        "usage": stored["usage"],
+        "updated_at": stored["updated_at"],
+    }
+
+
+_TASK_STORE_PATH = Path(__file__).parent / "tasks_state.json"
+
+
+def _task_store() -> dict:
+    """Tiny persistent task registry (JSON file). Only written by async runs,
+    which are disabled today; the endpoint reads it so the contract holds."""
+    try:
+        return json.loads(_TASK_STORE_PATH.read_text())
+    except Exception:  # noqa: BLE001
+        return {}
 
 
 # ---- Pond error responses --------------------------------------------------
