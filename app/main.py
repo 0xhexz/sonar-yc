@@ -192,7 +192,7 @@ def _fail(status: int, code: str, message: str):
     raise HTTPException(status_code=status, detail={"code": code, "message": message})
 
 
-@app.get("/manifest")
+@app.api_route("/manifest", methods=["GET", "HEAD"])
 async def manifest():
     """Public — must succeed without an access key or version header."""
     return {
@@ -326,7 +326,7 @@ async def _run_scan_task(task_id: str, run_id: str, only: list[str] | None) -> N
 # conformance checker probes that the route exists on a spec-shaped server,
 # so we implement it exactly per the Integration Guide and back it with a
 # persistent store so a real async mode could adopt it unchanged.
-@app.get("/tasks/{task_id}", dependencies=[Depends(_auth_pond)])
+@app.api_route("/tasks/{task_id}", methods=["GET", "HEAD"], dependencies=[Depends(_auth_pond)])
 async def get_task(task_id: str):
     stored = _task_store().get(task_id)
     if not stored:
@@ -374,3 +374,23 @@ def _task_write(task_id: str, run_id: str, status: str,
 @app.exception_handler(HTTPException)
 async def pond_error(_request: Request, error: HTTPException):
     return JSONResponse(status_code=error.status_code, content={"error": error.detail})
+
+
+# A checker often probes with HEAD or OPTIONS before the real request.
+# Starlette does not derive either from a GET/POST route, so both returned
+# 405 and an endpoint that exists looked missing. Answer them explicitly.
+@app.options("/{full_path:path}")
+async def pond_options(full_path: str):
+    from fastapi import Response
+
+    return Response(
+        status_code=204,
+        headers={
+            "Allow": "GET, HEAD, POST, OPTIONS",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+            "Access-Control-Allow-Headers": (
+                "Authorization, Content-Type, Idempotency-Key, X-Agent-Protocol-Version"
+            ),
+        },
+    )

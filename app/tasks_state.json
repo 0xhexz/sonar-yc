@@ -1,0 +1,1 @@
+{"task-async-202-test": {"run_id": "async-202-test", "status": "completed", "output": [{"type": "text", "text": "Scan complete. 4 alert(s): EARLY:johnrush, EARLY:shivanijpatel, EARLY:kunal_twts, EARLY:activeloop"}], "usage": {"unit_of_measurement": "scan", "quantity": 1}, "updated_at": "2026-09-06T07:10:50Z"}}
