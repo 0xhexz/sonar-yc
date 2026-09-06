@@ -202,7 +202,7 @@ async def manifest():
         "metadata": {
             "name": "SONAR",
             "logo_url": "https://sonar-yc.vercel.app/logo.png",
-            "short_description": "Monitors YC + a16z Speedrun launches and founders who announce on X/LinkedIn before the official announcement.",
+            "short_description": "SONAR hears founder announcements on X, LinkedIn and Hacker News and pings your Slack the moment a YC or Speedrun startup signals acceptance — days before the directory lists them.",
             "description": (
                 "<p>SONAR polls the YC directory, the a16z Speedrun directory, X and LinkedIn "
                 "for new YC/Speedrun companies and fires Slack alerts. It specialises in early "
