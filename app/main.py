@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import re
+import asyncio
 import json
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -237,7 +238,7 @@ async def manifest():
                 },
             }
         ],
-        "capabilities": {"sync": True, "streaming": False, "async_tasks": False,
+        "capabilities": {"sync": True, "streaming": False, "async_tasks": True,
                          "cancellation": False, "attachments": False, "feedback": False},
         "input_modes": ["application/json"],
         "output_modes": ["text/markdown"],
@@ -285,29 +286,39 @@ async def create_run(run: RunRequest, idempotency_key: str | None = Header(defau
 
     only = run.parameters.get("only") if isinstance(run.parameters, dict) else None
     if isinstance(only, list) and only:
-        only = [s for s in only if s in ("yc", "speedrun", "x", "linkedin")] or None
+        only = [s for s in only if s in ("yc", "speedrun", "x", "linkedin", "hn")] or None
     else:
         only = None
 
-    result = await scan_now(only=only)
+    # A full scan (5 sources incl. Apify) takes 2-4 minutes — beyond
+    # Cloudflare's ~100s proxy window. Per Pond Protocol: return 202 with a
+    # task id and let the caller poll /tasks/{task_id}.
+    task_id = f"task-{run.run_id}"
+    _task_write(task_id, run.run_id, "running",
+                [{"type": "text", "text": "Scan in progress."}])
+    asyncio.create_task(_run_scan_task(task_id, run.run_id, only))
+
+    return JSONResponse(
+        status_code=202,
+        content={"run_id": run.run_id, "task_id": task_id, "status": "running",
+                 "usage": {"unit_of_measurement": "scan", "quantity": 0}},
+    )
+
+
+async def _run_scan_task(task_id: str, run_id: str, only: list[str] | None) -> None:
+    try:
+        result = await scan_now(only=only)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("async scan failed: %s", exc)
+        result = None
     if result is None:
-        return {
-            "run_id": run.run_id,
-            "status": "failed",
-            "error": {"code": "internal_error", "message": "The scan failed."},
-            "usage": {"unit_of_measurement": "scan", "quantity": 0},
-        }
-
-    summary = f"Scan complete. {len(result.alerts)} alert(s): " + ", ".join(
-        f"{a.classification}:{a.company_name}" for a in result.alerts
-    ) or "Scan complete. No new alerts."
-
-    return {
-        "run_id": run.run_id,
-        "status": "completed",
-        "output": [{"type": "text", "text": summary}],
-        "usage": {"unit_of_measurement": "scan", "quantity": 1},
-    }
+        _task_write(task_id, run_id, "failed",
+                    [{"type": "text", "text": "The scan failed."}], quantity=0)
+        return
+    alerts = ", ".join(f"{a.classification}:{a.company_name}" for a in result.alerts)
+    summary = f"Scan complete. {len(result.alerts)} alert(s)" + (f": {alerts}" if alerts else ".")
+    _task_write(task_id, run_id, "completed",
+                [{"type": "text", "text": summary}], quantity=1)
 
 
 # ---- Optional Pond Protocol: tasks endpoint -------------------------------
@@ -334,12 +345,29 @@ _TASK_STORE_PATH = Path(__file__).parent / "tasks_state.json"
 
 
 def _task_store() -> dict:
-    """Tiny persistent task registry (JSON file). Only written by async runs,
-    which are disabled today; the endpoint reads it so the contract holds."""
+    """Tiny persistent task registry (JSON file), written by async runs."""
     try:
         return json.loads(_TASK_STORE_PATH.read_text())
     except Exception:  # noqa: BLE001
         return {}
+
+
+def _task_write(task_id: str, run_id: str, status: str,
+                output: list[dict], quantity: int = 0) -> None:
+    import datetime as _dt
+
+    store = _task_store()
+    store[task_id] = {
+        "run_id": run_id,
+        "status": status,
+        "output": output,
+        "usage": {"unit_of_measurement": "scan", "quantity": quantity},
+        "updated_at": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
+    try:
+        _TASK_STORE_PATH.write_text(json.dumps(store))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("could not persist task state: %s", exc)
 
 
 # ---- Pond error responses --------------------------------------------------

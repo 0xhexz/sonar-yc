@@ -28,3 +28,4 @@ htmlcov/
 dist/
 build/
 brand/landing.html
+tasks_state
