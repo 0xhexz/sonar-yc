@@ -1,0 +1,43 @@
+name: SONAR scheduled sweep
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 min (GitHub may add jitter in peak hours)
+  workflow_dispatch: {}       # manual trigger button
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sonar-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps (no Playwright/Chromium on the runner)
+        run: |
+          grep -viE "playwright" requirements.txt > /tmp/req.txt || true
+          pip install -r /tmp/req.txt psycopg[binary]
+
+      - name: Run one scan (state in Postgres, alerts to Slack)
+        env:
+          STATE_DB: ${{ secrets.STATE_DB }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          X_PROVIDER_BASE_URL: ${{ secrets.X_PROVIDER_BASE_URL }}
+          X_PROVIDER_API_KEY: ${{ secrets.X_PROVIDER_API_KEY }}
+          LINKEDIN_PROVIDER_BASE_URL: https://api.apify.com
+          LINKEDIN_PROVIDER_API_KEY: ${{ secrets.APIFY_TOKEN }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+        run: python scripts/scan_once_cloud.py

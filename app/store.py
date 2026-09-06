@@ -1,27 +1,107 @@
-"""Persistent state store (SQLite).
+# -*- coding: utf-8 -*-
+# type: ignore
+"""State store abstraction — SQLite locally, Postgres on cloud runners.
 
-Single-file database, no server, easy to back up. Provides:
+Why this exists: GitHub Actions runners have no persistent disk between runs,
+and serverless platforms (Vercel) have none between requests. SQLite is perfect
+for a single always-on process, useless for the cloud path. Rather than
+splitting the codebase in two, the Store now speaks either dialect:
 
-* de-duplication    -> ``seen`` table so we never re-alert on a company
-* pending tracking  -> ``pending_early`` so founders announced on social but not
-                       yet confirmed by a directory can be upgraded later
-* opaque state      -> ``kv`` for last-run cutoffs, etc.
-* directory set     -> ``directory`` so the detection layer can know what a
-                       source currently believes is a real company
+  * ``STATE_DB`` unset or a file path      -> SQLite (unchanged behaviour)
+  * ``STATE_DB=postgres://...`` or ``STATE_DB=postgresql://...`` -> Postgres
+
+The Postgres dialect uses psycopg (v3) with the same SQL — everything in our
+schema is portable (TEXT/INTEGER, simple upserts). Connection params come from
+the URL; a small pool keeps serverless cold-starts cheap.
 """
 from __future__ import annotations
 
 import json
-import sqlite3
+import logging
+import os
 import threading
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger("ycradar.store")
 
 _LOCK = threading.Lock()
 
 
-class Store:
+def is_postgres_url(url: str | None) -> bool:
+    return bool(url) and url.startswith(("postgres://", "postgresql://"))
+
+
+def open_store() -> "Store":
+    """Factory used by the app and cloud entrypoints."""
+    url = os.environ.get("STATE_DB") or os.environ.get("DATABASE_URL")
+    if is_postgres_url(url):
+        from .pg_store import PostgresStore
+
+        return PostgresStore(url)  # type: ignore[return-value]
+    db_path = url or os.environ.get("YCRADAR_DB") or "data/state.db"
+    return Store(Path(db_path))
+
+
+def _json(v) -> str:
+    return json.dumps(v)
+
+
+def _loads(v):
+    if v is None:
+        return {}
+    if isinstance(v, (dict, list)):
+        return v
+    try:
+        return json.loads(v)
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+class StoreBase(ABC):
+    """Contract shared by SQLite and Postgres backends."""
+
+    @abstractmethod
+    def is_seen(self, dedup_key: str) -> bool: ...
+    @abstractmethod
+    def mark_seen(self, dedup_key: str, payload: dict | None = None) -> None: ...
+    @abstractmethod
+    def is_pending(self, key: str) -> bool: ...
+    @abstractmethod
+    def add_pending(self, key: str, payload: dict) -> None: ...
+    @abstractmethod
+    def remove_pending(self, key: str) -> None: ...
+    @abstractmethod
+    def save_message_ts(self, identity: str, channel: str, ts: str) -> None: ...
+    @abstractmethod
+    def get_message_ts(self, identity: str) -> tuple[str, str] | None: ...
+    @abstractmethod
+    def list_pending(self) -> list[dict]: ...
+    @abstractmethod
+    def get_state(self, key: str, default: Any = None) -> Any: ...
+    @abstractmethod
+    def set_state(self, key: str, value: Any) -> None: ...
+    @abstractmethod
+    def save_directory_set(self, source: str, entries: list[dict]) -> int: ...
+    @abstractmethod
+    def directory_slugs(self, source: str) -> set[str]: ...
+    @abstractmethod
+    def directory_counts(self) -> dict[str, int]: ...
+    @abstractmethod
+    def seen_count(self) -> int: ...
+    @abstractmethod
+    def recent_directory(self, limit: int = 8) -> list[dict]: ...
+    @abstractmethod
+    def close(self) -> None: ...
+
+
+class Store(StoreBase):
+    """SQLite backend — byte-for-byte the original behaviour."""
+
     def __init__(self, db_path: Path) -> None:
+        import sqlite3
+
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
@@ -31,7 +111,7 @@ class Store:
         self._init_schema()
 
     def _init_schema(self) -> None:
-        with self._conn:
+        with _LOCK:
             self._conn.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS seen (
@@ -79,7 +159,6 @@ class Store:
                 (dedup_key, json.dumps(payload or {})),
             )
 
-    # ---- pending early -------------------------------------------------------
     def is_pending(self, key: str) -> bool:
         row = self._conn.execute(
             "SELECT 1 FROM pending_early WHERE key=?", (key,)
@@ -99,7 +178,6 @@ class Store:
         with self._conn:
             self._conn.execute("DELETE FROM pending_early WHERE key=?", (key,))
 
-    # ---- message ts (thread-reply capability) --------------------------------
     def save_message_ts(self, identity: str, channel: str, ts: str) -> None:
         with self._conn:
             self._conn.execute(
@@ -127,7 +205,6 @@ class Store:
             for r in rows
         ]
 
-    # ---- kv ---------------------------------------------------------------
     def get_state(self, key: str, default: Any = None) -> Any:
         row = self._conn.execute("SELECT v FROM kv WHERE k=?", (key,)).fetchone()
         if row is None:
@@ -145,7 +222,6 @@ class Store:
                 (key, json.dumps(value)),
             )
 
-    # ---- directory set ----------------------------------------------------
     def save_directory_set(self, source: str, entries: list[dict]) -> int:
         """(Re)write the known-company set for a source. Dedupes by slug. Returns count saved."""
         seen_slugs: set[str] = set()
@@ -172,7 +248,6 @@ class Store:
         ).fetchall()
         return {r[0] for r in rows}
 
-    # ---- dashboard aggregates ------------------------------------------------
     def directory_counts(self) -> dict[str, int]:
         rows = self._conn.execute(
             "SELECT source, COUNT(*) FROM directory GROUP BY source"

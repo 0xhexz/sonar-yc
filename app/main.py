@@ -42,7 +42,9 @@ _settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global store, notifier, scheduler
-    store = Store(_settings.state_db_path)
+    from .store import open_store
+
+    store = open_store()
     notifier = SlackNotifier(
         bot_token=_settings.slack_bot_token,
         webhook_url=_settings.slack_webhook_url,
