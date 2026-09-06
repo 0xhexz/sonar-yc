@@ -178,11 +178,28 @@ def _is_playwright_ok() -> bool:
 # ---- admin -----------------------------------------------------------------
 class TriggerBody(BaseModel):
     only: list[str] | None = None
+    token: str | None = None
+
+
+def _check_trigger_token(body: TriggerBody | None) -> None:
+    """/trigger is the external-cron entry (cron-job.org can't set headers,
+    so the token may travel in the body). No token configured = open (local)."""
+    import os
+
+    expected = os.environ.get("TRIGGER_TOKEN") or getattr(_settings, "trigger_token", None)
+    if not expected:
+        return
+    supplied = (body.token if body else None) or ""
+    import base64
+
+    if supplied != expected:
+        _fail(401, "unauthorized", "Trigger token missing or invalid.")
 
 
 @app.post("/trigger")
 async def trigger(body: TriggerBody | None = None):
-    """Admin endpoint to run a scan now (e.g. for local testing)."""
+    """External-cron endpoint: runs one full scan synchronously."""
+    _check_trigger_token(body)
     result = await scan_now(only=(body.only if body else None))
     if result is None:
         return {"ok": False}
