@@ -1,4 +1,4 @@
-"""YC Radar — FastAPI app: monitor scheduler + Pond Protocol V1 endpoints.
+"""SONAR — FastAPI app: monitor scheduler + Pond Protocol V1 endpoints.
 
 The service:
 * runs the monitoring loop on schedule (directory sources every
@@ -127,7 +127,7 @@ async def scan_now(only: list[str] | None = None):
         return None
 
 
-app = FastAPI(title="YC Radar", version=APP_VERSION, lifespan=lifespan)
+app = FastAPI(title="SONAR", version=APP_VERSION, lifespan=lifespan)
 
 
 @app.get("/")
@@ -204,15 +204,15 @@ async def manifest():
             "logo_url": "https://sonar-yc.vercel.app/logo.png",
             "short_description": "Monitors YC + a16z Speedrun launches and founders who announce on X/LinkedIn before the official announcement.",
             "description": (
-                "<p>YC Radar polls the YC directory, the a16z Speedrun directory, X and LinkedIn "
+                "<p>SONAR polls the YC directory, the a16z Speedrun directory, X and LinkedIn "
                 "for new YC/Speedrun companies and fires Slack alerts. It specialises in early "
                 "detection: a founder posting about their acceptance before the accelerator "
                 "announces it.</p>"
             ),
             "category": "productivity",
-            "key_features": "<ul><li>YC Directory</li><li>Speedrun (a16z)</li><li>X</li><li>LinkedIn</li><li>Early-detection</li></ul>",
+            "key_features": "<ul><li>5 sources: YC Directory, a16z Speedrun, X, LinkedIn, Hacker News</li><li>Early-signal detection with measured precision</li><li>Echo-confirm thread replies with lead time</li><li>Auto-managed provider fuel with free fallback</li><li>Pond Protocol V1 with async tasks</li></ul>",
             "use_cases": "<p>GTM pipeline-building: reach YC/Speedrun founders the moment they announce.</p>",
-            "setup_instructions": "Configure env (providers, Slack, Pond) and deploy. POST /runs with action scan_now to trigger a monitor scan.",
+            "setup_instructions": "Clone the repo, run python scripts/setup_wizard.py (validates your Slack token, picks the channel, sends a test message), then start the service. Pond: point the Agent URL at the deployed instance.",
             "developer_x_url": "",
             "github_url": "",
         },
