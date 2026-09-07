@@ -105,10 +105,10 @@ def render_dashboard(store: Store | None) -> str:
 
     # Source status table for all 5 monitored sources
     source_items = [
-        ("YC Directory", "Directory (Official)", "healthy" if counts.get("yc") else "coverage gap", "ok" if counts.get("yc") else "warn", f"{counts.get('yc', 0)} tracked", f"Every {settings.yc_interval_hours}h"),
-        ("a16z Speedrun", "Directory (Official)", "healthy" if counts.get("speedrun") else "coverage gap", "ok" if counts.get("speedrun") else "warn", f"{counts.get('speedrun', 0)} tracked", f"Every {settings.speedrun_interval_hours}h"),
-        ("X (Twitter)", "Social / Early Signals", "ready (paid API)" if settings.is_x_ready else "active (free syndication / mock)", "ok", "TwtAPI ready" if settings.is_x_ready else "0$ free fallback active", f"Every {settings.x_interval_minutes}m"),
-        ("LinkedIn", "Social / Early Signals", "ready (paid API)" if settings.is_linkedin_ready else "mock / dry-run", "ok" if settings.is_linkedin_ready else "muted", "Apify ready" if settings.is_linkedin_ready else "Awaiting API key", f"Every {settings.linkedin_interval_hours}h"),
+        ("YC Directory", "Directory (Official)", "healthy" if counts.get("yc") else "coverage gap", "ok" if counts.get("yc") else "warn", f"{counts.get('yc', 0)} tracked", f"Every {settings.yc_cadence_label}"),
+        ("a16z Speedrun", "Directory (Official)", "healthy" if counts.get("speedrun") else "coverage gap", "ok" if counts.get("speedrun") else "warn", f"{counts.get('speedrun', 0)} tracked", f"Every {settings.speedrun_cadence_label}"),
+        ("X (Twitter)", "Social / Early Signals", "ready (paid API)" if settings.is_x_ready else "active (free syndication / mock)", "ok", "TwtAPI ready" if settings.is_x_ready else "0$ free fallback active", f"Every {settings.x_cadence_label}"),
+        ("LinkedIn", "Social / Early Signals", "ready (paid API)" if settings.is_linkedin_ready else "mock / dry-run", "ok" if settings.is_linkedin_ready else "muted", "Apify ready" if settings.is_linkedin_ready else "Awaiting API key", f"Every {settings.linkedin_cadence_label}"),
         ("Hacker News", "Social / Founder Posts", "active (free feed)" if settings.hn_enabled else "disabled", "ok" if settings.hn_enabled else "muted", "Algolia free feed", "On scan"),
     ]
     sources_rows = ""

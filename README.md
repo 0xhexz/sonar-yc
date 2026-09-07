@@ -62,11 +62,11 @@ description and a link**, plus a detected timestamp (PT).
 
 ### Cadence
 Directories change slowly; social moves fast. The loop runs each at its own
-interval (configurable):
-* **YC Directory:** every `YC_INTERVAL_HOURS` (default 8h)
-* **Speedrun:** every `SPEEDRUN_INTERVAL_HOURS` (default 8h)
-* **X:** every `X_INTERVAL_MINUTES` (default 30m)
-* **LinkedIn:** every `LINKEDIN_INTERVAL_HOURS` (default 24h — Apify costs per post)
+interval (configurable via duration strings e.g. `30m`, `8h`, `1d`, `0.5h` or legacy numbers):
+* **YC Directory:** `YC_INTERVAL` / `YC_INTERVAL_HOURS` (default `8h`)
+* **Speedrun:** `SPEEDRUN_INTERVAL` / `SPEEDRUN_INTERVAL_HOURS` (default `8h`)
+* **X:** `X_INTERVAL` / `X_INTERVAL_MINUTES` (default `30m`)
+* **LinkedIn:** `LINKEDIN_INTERVAL` / `LINKEDIN_INTERVAL_HOURS` (default `24h` — Apify costs per post)
 
 A source failure is logged as a **coverage gap**, never treated as "no news."
 

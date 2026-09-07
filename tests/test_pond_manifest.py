@@ -70,4 +70,64 @@ def test_dashboard_and_trailing_slashes():
         assert c.get("/favicon.ico").status_code == 204
 
 
+def test_cadence_duration_strings():
+    import pytest
+    from app.config import Settings, format_duration, parse_duration_seconds
+
+    # 1. Parsing duration strings and raw numbers
+    assert parse_duration_seconds(8, default_unit="h") == 28800
+    assert parse_duration_seconds(15, default_unit="m") == 900
+    assert parse_duration_seconds("30m") == 1800
+    assert parse_duration_seconds("30 min") == 1800
+    assert parse_duration_seconds("0.5h") == 1800
+    assert parse_duration_seconds("1h30m") == 5400
+    assert parse_duration_seconds("1d") == 86400
+    assert parse_duration_seconds("45s") == 45
+    with pytest.raises(ValueError):
+        parse_duration_seconds("invalid_duration")
+
+    # 2. Formatting durations
+    assert format_duration(1800) == "30m"
+    assert format_duration(28800) == "8h"
+    assert format_duration(86400) == "1d"
+    assert format_duration(5400) == "1h30m"
+    assert format_duration(45) == "45s"
+
+    # 3. Settings aliases with duration strings
+    s = Settings(
+        yc_interval="30m",
+        speedrun_interval="0.5h",
+        x_interval="15m",
+        linkedin_interval="1d",
+    )
+    assert s.yc_interval_seconds == 1800
+    assert s.speedrun_interval_seconds == 1800
+    assert s.x_interval_seconds == 900
+    assert s.linkedin_interval_seconds == 86400
+    assert s.yc_cadence_label == "30m"
+    assert s.speedrun_cadence_label == "30m"
+    assert s.x_cadence_label == "15m"
+    assert s.linkedin_cadence_label == "1d"
+
+    # 4. Backward compatibility with legacy inputs
+    s_legacy = Settings(
+        yc_interval_hours=2,
+        speedrun_interval_hours=4,
+        x_interval_minutes=15,
+        linkedin_interval_hours=48,
+    )
+    assert s_legacy.yc_interval_hours == 2
+    assert s_legacy.speedrun_interval_hours == 4
+    assert s_legacy.x_interval_minutes == 15
+    assert s_legacy.linkedin_interval_hours == 48
+    assert s_legacy.yc_interval_seconds == 7200
+    assert s_legacy.speedrun_interval_seconds == 14400
+    assert s_legacy.x_interval_seconds == 900
+    assert s_legacy.linkedin_interval_seconds == 172800
+    assert s_legacy.yc_cadence_label == "2h"
+    assert s_legacy.speedrun_cadence_label == "4h"
+    assert s_legacy.x_cadence_label == "15m"
+    assert s_legacy.linkedin_cadence_label == "2d"
+
+
 

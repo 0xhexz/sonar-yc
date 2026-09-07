@@ -55,38 +55,38 @@ async def lifespan(app: FastAPI):
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
     scheduler = AsyncIOScheduler()
-    # YC Directory — own interval.
+    # YC Directory — interval from yc_interval_hours / yc_interval.
     scheduler.add_job(
         _yc_job,
         "interval",
-        hours=_settings.yc_interval_hours,
+        seconds=_settings.yc_interval_seconds,
         id="yc",
         max_instances=1,
         coalesce=True,
     )
-    # Speedrun — own interval.
+    # Speedrun — interval from speedrun_interval_hours / speedrun_interval.
     scheduler.add_job(
         _speedrun_job,
         "interval",
-        hours=_settings.speedrun_interval_hours,
+        seconds=_settings.speedrun_interval_seconds,
         id="speedrun",
         max_instances=1,
         coalesce=True,
     )
-    # X (fast, cheap via TwtAPI free tier) — own interval.
+    # X (fast, cheap via TwtAPI free tier) — interval from x_interval_minutes / x_interval.
     scheduler.add_job(
         _x_job,
         "interval",
-        minutes=_settings.x_interval_minutes,
+        seconds=_settings.x_interval_seconds,
         id="x",
         max_instances=1,
         coalesce=True,
     )
-    # LinkedIn (Apify per-post cost) — own interval (default daily).
+    # LinkedIn (Apify per-post cost) — interval from linkedin_interval_hours / linkedin_interval.
     scheduler.add_job(
         _linkedin_job,
         "interval",
-        hours=_settings.linkedin_interval_hours,
+        seconds=_settings.linkedin_interval_seconds,
         id="linkedin",
         max_instances=1,
         coalesce=True,

@@ -9,11 +9,80 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+import re
+from typing import Any
+import os
 
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-import os
+
+def parse_duration_seconds(v: int | float | str, default_unit: str = "h") -> int:
+    """Parse a flexible duration into total seconds.
+
+    Supports:
+    - Pure numbers: int or float or string digits (interpreted using `default_unit`,
+      e.g. 2 -> 2h -> 7200s, 30 -> 30m -> 1800s)
+    - Duration strings with units: '30m', '30 min', '8h', '1d', '0.5h', '45s', '1h30m'
+    """
+    if isinstance(v, (int, float)):
+        mult = 3600 if default_unit == "h" else 60
+        return max(1, int(v * mult))
+
+    v_str = str(v).strip().lower()
+    if not v_str:
+        mult = 3600 if default_unit == "h" else 60
+        return mult
+
+    if re.fullmatch(r"\d+", v_str):
+        mult = 3600 if default_unit == "h" else 60
+        return max(1, int(v_str) * mult)
+    if re.fullmatch(r"\d+\.\d+", v_str):
+        mult = 3600 if default_unit == "h" else 60
+        return max(1, int(float(v_str) * mult))
+
+    units = {
+        "s": 1, "sec": 1, "secs": 1, "second": 1, "seconds": 1,
+        "m": 60, "min": 60, "mins": 60, "minute": 60, "minutes": 60,
+        "h": 3600, "hr": 3600, "hrs": 3600, "hour": 3600, "hours": 3600,
+        "d": 86400, "day": 86400, "days": 86400,
+    }
+    matches = re.findall(r"(\d+(?:\.\d+)?)\s*([a-zA-Z]+)?", v_str)
+    if not matches:
+        raise ValueError(f"Invalid duration string format: {v!r}")
+
+    total = 0.0
+    for num_str, unit_str in matches:
+        u_clean = unit_str.lower() if unit_str else default_unit
+        if u_clean not in units:
+            raise ValueError(f"Unknown duration unit {unit_str!r} in {v!r}")
+        total += float(num_str) * units[u_clean]
+
+    return max(1, int(round(total)))
+
+
+def format_duration(seconds: int | float) -> str:
+    """Format total seconds into human-readable duration string (e.g. '30m', '8h', '1d', '1h30m')."""
+    sec = int(round(seconds))
+    if sec <= 0:
+        return "0s"
+    days = sec // 86400
+    rem = sec % 86400
+    hours = rem // 3600
+    rem = rem % 3600
+    minutes = rem // 60
+    rem_s = rem % 60
+
+    parts = []
+    if days:
+        parts.append(f"{days}d")
+    if hours:
+        parts.append(f"{hours}h")
+    if minutes:
+        parts.append(f"{minutes}m")
+    if rem_s:
+        parts.append(f"{rem_s}s")
+    return "".join(parts) if parts else f"{sec}s"
 
 
 class Settings(BaseSettings):
@@ -25,10 +94,26 @@ class Settings(BaseSettings):
     )
 
     # ---- Monitoring cadence (per-source, editable via .env) -----------------
-    yc_interval_hours: int = Field(default=8, ge=1, description="YC directory poll cadence (hours)")
-    speedrun_interval_hours: int = Field(default=8, ge=1, description="Speedrun directory poll cadence (hours)")
-    x_interval_minutes: int = Field(default=30, ge=5, description="X poll cadence (minutes, min 5)")
-    linkedin_interval_hours: int = Field(default=24, ge=1, description="LinkedIn poll cadence (hours; each scan costs ~$0.12)")
+    yc_interval_hours: int | float | str = Field(
+        default=8,
+        validation_alias=AliasChoices("yc_interval_hours", "yc_interval"),
+        description="YC directory poll cadence (hours or duration string like '8h', '30m', '1d', '0.5h')",
+    )
+    speedrun_interval_hours: int | float | str = Field(
+        default=8,
+        validation_alias=AliasChoices("speedrun_interval_hours", "speedrun_interval"),
+        description="Speedrun directory poll cadence (hours or duration string like '8h', '30m', '1d', '0.5h')",
+    )
+    x_interval_minutes: int | float | str = Field(
+        default=30,
+        validation_alias=AliasChoices("x_interval_minutes", "x_interval"),
+        description="X poll cadence (minutes or duration string like '30m', '1h', '0.5h')",
+    )
+    linkedin_interval_hours: int | float | str = Field(
+        default=24,
+        validation_alias=AliasChoices("linkedin_interval_hours", "linkedin_interval"),
+        description="LinkedIn poll cadence (hours or duration string like '24h', '1d', '12h')",
+    )
     linkedin_max_posts: int = Field(
         default=15, description="Max posts per keyword per Apify run (cost control)"
     )
@@ -118,10 +203,66 @@ class Settings(BaseSettings):
     http_timeout: int = Field(default=30, description="Seconds")
 
     # ---- Derived helpers ---------------------------------------------------
+    @field_validator("yc_interval_hours", "speedrun_interval_hours", "linkedin_interval_hours", mode="before")
+    @classmethod
+    def _validate_hour_cadence(cls, v: Any) -> int | float | str:
+        if isinstance(v, str):
+            v_str = v.strip()
+            if re.fullmatch(r"\d+", v_str):
+                return int(v_str)
+            if re.fullmatch(r"\d+\.\d+", v_str):
+                return float(v_str)
+        parse_duration_seconds(v, default_unit="h")
+        return v
+
+    @field_validator("x_interval_minutes", mode="before")
+    @classmethod
+    def _validate_minute_cadence(cls, v: Any) -> int | float | str:
+        if isinstance(v, str):
+            v_str = v.strip()
+            if re.fullmatch(r"\d+", v_str):
+                return int(v_str)
+            if re.fullmatch(r"\d+\.\d+", v_str):
+                return float(v_str)
+        parse_duration_seconds(v, default_unit="m")
+        return v
+
     @field_validator("sources_enabled", "x_keywords", "linkedin_keywords", mode="before")
     @classmethod
     def _ensure_str(cls, v):
         return "," if v is None else v
+
+    @property
+    def yc_interval_seconds(self) -> int:
+        return parse_duration_seconds(self.yc_interval_hours, default_unit="h")
+
+    @property
+    def speedrun_interval_seconds(self) -> int:
+        return parse_duration_seconds(self.speedrun_interval_hours, default_unit="h")
+
+    @property
+    def x_interval_seconds(self) -> int:
+        return parse_duration_seconds(self.x_interval_minutes, default_unit="m")
+
+    @property
+    def linkedin_interval_seconds(self) -> int:
+        return parse_duration_seconds(self.linkedin_interval_hours, default_unit="h")
+
+    @property
+    def yc_cadence_label(self) -> str:
+        return format_duration(self.yc_interval_seconds)
+
+    @property
+    def speedrun_cadence_label(self) -> str:
+        return format_duration(self.speedrun_interval_seconds)
+
+    @property
+    def x_cadence_label(self) -> str:
+        return format_duration(self.x_interval_seconds)
+
+    @property
+    def linkedin_cadence_label(self) -> str:
+        return format_duration(self.linkedin_interval_seconds)
 
     @property
     def enabled_source_list(self) -> list[str]:
