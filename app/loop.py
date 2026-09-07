@@ -304,10 +304,12 @@ async def run_scan(settings: Settings, store: Store, notifier: SlackNotifier,
     # received). Anything Slack does not ack stays unmarked and is offered
     # again next scan — an outage must delay alerts, never delete them. In
     # dry-run (notifier not ready) decision equals delivery, so we ledger.
-    emitted.sort(key=lambda a: (a.classification != EARLY,))
+    paired_alerts = list(zip(_alert_identities, emitted))
+    paired_alerts.sort(key=lambda item: (item[1].classification != EARLY,))
+    emitted = [a for _, a in paired_alerts]
     delivered = 0
     ledgered: set[str] = set()
-    for (identity, _cls), alert in zip(_alert_identities, emitted):
+    for (identity, _cls), alert in paired_alerts:
         ok = await notifier.send(alert)
         if ok:
             delivered += 1
