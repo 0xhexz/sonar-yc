@@ -153,13 +153,13 @@ app/
   slack_notifier.py  Block Kit formatting + delivery
   sources/           yc_directory, speedrun, x, linkedin, base
 scripts/             run_once, run_yc, live probes, inspect helpers
-tests/               pytest suite (35 passing)
+tests/               pytest suite (36 passing)
 docs/                demo alert screenshots
 ```
 
 ## ✅ Status
 
-* 35/35 unit tests passing.
+* 36/36 unit tests passing.
 * Live-verified: Speedrun API (258 companies), YC directory (160 companies via
   headless Chrome), Pond `/manifest` + `/runs` auth, and rendered demo alerts.
 

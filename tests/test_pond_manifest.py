@@ -57,3 +57,12 @@ def test_slack_channel_alias():
     assert s.slack_channel == "C12345"
     assert s.slack_dm_user == "U67890"
 
+
+def test_dashboard_and_trailing_slashes():
+    with _client() as c:
+        assert c.get("/dashboard").status_code == 200
+        assert c.get("/dashboard/").status_code == 200
+        assert c.get("/health/").status_code == 200
+        assert c.get("/favicon.ico").status_code == 204
+
+

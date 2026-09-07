@@ -18,7 +18,7 @@ import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -132,7 +132,21 @@ async def scan_now(only: list[str] | None = None):
 app = FastAPI(title="SONAR", version=APP_VERSION, lifespan=lifespan)
 
 
-@app.api_route("/", methods=["GET", "HEAD"])
+@app.middleware("http")
+async def normalize_trailing_slash(request: Request, call_next):
+    path = request.url.path
+    if path != "/" and path.endswith("/"):
+        request.scope["path"] = path.rstrip("/")
+    return await call_next(request)
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
+
+
+@app.get("/")
+@app.head("/", include_in_schema=False)
 async def root():
     """Serve the SONAR landing page; JSON pointer if the page is missing."""
     from pathlib import Path
@@ -146,6 +160,7 @@ async def root():
 
 
 @app.get("/dashboard")
+@app.get("/dashboard/", include_in_schema=False)
 async def dashboard():
     """Human-readable window into the monitor: counters, health, recents."""
     from fastapi.responses import HTMLResponse
@@ -157,6 +172,7 @@ async def dashboard():
 
 
 @app.get("/health")
+@app.get("/health/", include_in_schema=False)
 async def health():
     return {
         "status": "ok",
@@ -215,7 +231,10 @@ def _fail(status: int, code: str, message: str):
     raise HTTPException(status_code=status, detail={"code": code, "message": message})
 
 
-@app.api_route("/manifest", methods=["GET", "HEAD"])
+@app.get("/manifest")
+@app.head("/manifest", include_in_schema=False)
+@app.get("/manifest/", include_in_schema=False)
+@app.head("/manifest/", include_in_schema=False)
 async def manifest():
     """Public — must succeed without an access key or version header."""
     return {
@@ -348,7 +367,8 @@ async def _run_scan_task(task_id: str, run_id: str, only: list[str] | None) -> N
 # /runs returns 202 + task_id (task-{run_id}); Pond polls GET /tasks/{task_id}.
 # We also accept the bare run_id as an alias and answer a bare /tasks listing,
 # so whichever id a caller holds resolves.
-@app.api_route("/tasks/{task_id}", methods=["GET", "HEAD"], dependencies=[Depends(_auth_pond)])
+@app.get("/tasks/{task_id}", dependencies=[Depends(_auth_pond)])
+@app.head("/tasks/{task_id}", dependencies=[Depends(_auth_pond)], include_in_schema=False)
 async def get_task(task_id: str):
     store = _task_store()
     stored = store.get(task_id) or store.get(f"task-{task_id}")
@@ -367,7 +387,8 @@ async def get_task(task_id: str):
     }
 
 
-@app.api_route("/tasks", methods=["GET", "HEAD"], dependencies=[Depends(_auth_pond)])
+@app.get("/tasks", dependencies=[Depends(_auth_pond)])
+@app.head("/tasks", dependencies=[Depends(_auth_pond)], include_in_schema=False)
 async def list_tasks():
     """Registry listing — makes the tasks endpoint discoverable to checkers."""
     store = _task_store()
