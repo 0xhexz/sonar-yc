@@ -10,7 +10,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import os
@@ -85,9 +85,15 @@ class Settings(BaseSettings):
     # ---- Slack -------------------------------------------------------------
     slack_bot_token: str | None = Field(default=None, description="xoxb- bot token")
     slack_webhook_url: str | None = Field(default=None, description="Incoming webhook fallback")
-    slack_channel: str = Field(default="#yc-radar", description="Channel to post alerts to")
+    slack_channel: str = Field(
+        default="#yc-radar",
+        validation_alias=AliasChoices("slack_channel", "slack_channel_id"),
+        description="Channel to post alerts to (channel name or channel ID)",
+    )
     slack_dm_user: str | None = Field(
-        default=None, description="If set, DM this user instead of a channel"
+        default=None,
+        validation_alias=AliasChoices("slack_dm_user", "slack_dm_user_id"),
+        description="If set, DM this user instead of a channel",
     )
 
     # ---- Pond --------------------------------------------------------------

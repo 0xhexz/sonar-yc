@@ -90,11 +90,16 @@ def main() -> int:
                         headers={"Authorization": f"Bearer {token}"},
                     )
                 ).json()
+                dm_id = (dm.get("channel") or {}).get("id", "")
+                result_env["SLACK_CHANNEL"] = ""
                 result_env["SLACK_CHANNEL_ID"] = ""
-                result_env["SLACK_DM_USER_ID"] = (dm.get("channel") or {}).get("id", "")
+                result_env["SLACK_DM_USER"] = dm_id
+                result_env["SLACK_DM_USER_ID"] = dm_id
             else:
                 ch = channels[choice - 1]
+                result_env["SLACK_CHANNEL"] = ch["id"]
                 result_env["SLACK_CHANNEL_ID"] = ch["id"]
+                result_env["SLACK_DM_USER"] = ""
                 result_env["SLACK_DM_USER_ID"] = ""
                 if not ch.get("is_member"):
                     join = (

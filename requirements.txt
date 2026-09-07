@@ -8,3 +8,4 @@ beautifulsoup4>=4.12
 playwright>=1.44
 tenacity>=8.2
 pytest>=8.0
+jsonschema>=4.20

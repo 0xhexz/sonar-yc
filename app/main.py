@@ -132,7 +132,7 @@ async def scan_now(only: list[str] | None = None):
 app = FastAPI(title="SONAR", version=APP_VERSION, lifespan=lifespan)
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def root():
     """Serve the SONAR landing page; JSON pointer if the page is missing."""
     from pathlib import Path

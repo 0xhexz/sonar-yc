@@ -152,14 +152,14 @@ app/
   loop.py            orchestrates one scan
   slack_notifier.py  Block Kit formatting + delivery
   sources/           yc_directory, speedrun, x, linkedin, base
-scripts/             run_once, run_yc, render_demo, inspect helpers
-tests/               pytest suite (24 passing)
+scripts/             run_once, run_yc, live probes, inspect helpers
+tests/               pytest suite (35 passing)
 docs/                demo alert screenshots
 ```
 
 ## ✅ Status
 
-* 24/24 unit tests passing.
+* 35/35 unit tests passing.
 * Live-verified: Speedrun API (258 companies), YC directory (160 companies via
   headless Chrome), Pond `/manifest` + `/runs` auth, and rendered demo alerts.
 

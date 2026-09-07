@@ -42,3 +42,18 @@ def test_health_endpoint():
         r = c.get("/health")
         assert r.status_code == 200
         assert r.json()["status"] == "ok"
+
+
+def test_root_endpoint():
+    with _client() as c:
+        assert c.head("/").status_code == 200
+        assert c.get("/").status_code == 200
+
+
+def test_slack_channel_alias():
+    from app.config import Settings
+
+    s = Settings(slack_channel_id="C12345", slack_dm_user_id="U67890")
+    assert s.slack_channel == "C12345"
+    assert s.slack_dm_user == "U67890"
+
