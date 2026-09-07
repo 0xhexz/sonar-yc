@@ -123,9 +123,8 @@ class XSource(ProviderSource):
                 api_key,
                 timeout=self.settings.http_timeout,
                 params={
-                    "query": kw,
+                    "query": self._build_query(kw),
                     "queryType": "Latest",
-                    "lang": self.settings.x_lang,
                     "count": 30,
                 },
             )
@@ -167,6 +166,19 @@ class XSource(ProviderSource):
             )
         return out
 
+    def _build_query(self, kw: str) -> str:
+        """Construct provider search query with exact phrase, optional recency window, and language."""
+        phrase = f'"{kw}"' if " " in kw else kw
+        parts = [phrase]
+        lookback = getattr(self.settings, "x_lookback_days", 0)
+        if lookback and lookback > 0 and "since:" not in phrase:
+            from datetime import datetime, timezone, timedelta
+            since_date = (datetime.now(timezone.utc) - timedelta(days=lookback)).strftime("%Y-%m-%d")
+            parts.append(f"since:{since_date}")
+        if self.settings.x_lang:
+            parts.append(f"lang:{self.settings.x_lang}")
+        return " ".join(parts)
+
     async def _fetch_sorsa(self) -> list[CompanySignal]:
         """Sorsa API path: POST /v3/search-tweets with an 'ApiKey' header."""
         base = self.settings.x_provider_base_url.rstrip("/")
@@ -175,10 +187,7 @@ class XSource(ProviderSource):
         for kw in self.settings.x_keyword_list:
             if not kw:
                 continue
-            # Multi-word keywords must be sent as an exact phrase, otherwise the
-            # provider matches the words independently and returns noise.
-            phrase = f'"{kw}"' if " " in kw else kw
-            query = f"{phrase} lang:{self.settings.x_lang}" if self.settings.x_lang else phrase
+            query = self._build_query(kw)
             payload = await post_json(
                 f"{base}/v3/search-tweets",
                 key,
@@ -211,8 +220,7 @@ class XSource(ProviderSource):
                 for kw in self.settings.x_keyword_list:
                     if not kw:
                         continue
-                    phrase = f'"{kw}"' if " " in kw else kw
-                    query = f"{phrase} lang:{self.settings.x_lang}" if self.settings.x_lang else phrase
+                    query = self._build_query(kw)
                     resp = await client.get(
                         f"{base}/twitter/tweet/advanced_search",
                         headers={"X-API-Key": key},
@@ -256,8 +264,7 @@ class XSource(ProviderSource):
                 for kw in self.settings.x_keyword_list:
                     if not kw:
                         continue
-                    phrase = f'"{kw}"' if " " in kw else kw
-                    query = f"{phrase} lang:{self.settings.x_lang}" if self.settings.x_lang else phrase
+                    query = self._build_query(kw)
                     resp = await client.get(
                         base,
                         headers=headers,
@@ -267,7 +274,11 @@ class XSource(ProviderSource):
                         logger.warning("TwtAPI aborted: HTTP %s (check key/quota)", resp.status_code)
                         break
                     resp.raise_for_status()
-                    items = _twtapi_items(resp.json())
+                    data = resp.json()
+                    if isinstance(data, dict) and data.get("code") in (401, 403, 429):
+                        logger.warning("TwtAPI error: %s (code %s)", data.get("msg"), data.get("code"))
+                        break
+                    items = _twtapi_items(data)
                     out.extend(self._map_items(items))
                 await asyncio.sleep(0.3)
         except Exception as exc:  # noqa: BLE001

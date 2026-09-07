@@ -62,7 +62,7 @@ def looks_like_founder_signal(text: str) -> bool:
     verb_positions = [
         m.start()
         for m in re.finditer(
-            r"got (into|in|accepted)|accepted|admitted|invited|selected|backed by|made it|we\s*are\s*in|we'?re\s*in|joined\s+the|part\s+of|cohort",
+            r"got (into|in|accepted)|accepted|admitted|invited|selected|backed by|made it|(we|i|startup|company|team)\s*(are|am|is|'?re)\s*in|is\s+in|joined\s+the|part\s+of|cohort",
             t,
         )
     ]
@@ -187,9 +187,21 @@ async def _chat(settings: Settings, messages: list[dict]) -> str:
                                          follow_redirects=True) as client:
                 resp = await client.post(url, json=payload, headers=headers)
                 if resp.status_code in (429, 500, 502, 503, 504):
-                    raise httpx.HTTPStatusError(
-                        f"provider throttling ({resp.status_code})", request=resp.request, response=resp
+                    retry_after = 5.0
+                    try:
+                        retry_after = float(resp.headers.get("retry-after", 5.0))
+                    except (ValueError, TypeError):
+                        pass
+                    if resp.status_code == 429 and "groq" in url.lower():
+                        retry_after = max(retry_after, 12.0)
+                    logger.warning(
+                        "LLM provider returned %s (attempt %d/3) - backing off %.1fs",
+                        resp.status_code,
+                        attempt + 1,
+                        retry_after,
                     )
+                    await asyncio.sleep(retry_after)
+                    continue
                 resp.raise_for_status()
                 data = resp.json()
                 return data["choices"][0]["message"]["content"] or ""
@@ -283,13 +295,7 @@ async def classify_batch(settings: Settings, items: list[dict]) -> dict[str, Fou
         return analysis
 
     batch_size = max(1, settings.classify_batch_size)
-    failed_once = False
     for start in range(0, len(to_ask), batch_size):
-        if failed_once:
-            # Provider rejected/failed a chunk — give up for THIS scan (the
-            # caller's regex gate covers precision); next scan will retry.
-            logger.warning("skipping remaining classification chunks this scan")
-            break
         chunk = to_ask[start : start + batch_size]
         payload = [
             {"id": it.get("id", ""), "text": it.get("text", ""), "author": it.get("author", "")}
@@ -307,7 +313,13 @@ async def classify_batch(settings: Settings, items: list[dict]) -> dict[str, Fou
             chunk_analysis = parse_batch(content, [it["id"] for it in chunk])
             analysis.update(chunk_analysis)
         except Exception as exc:  # noqa: BLE001
-            failed_once = True
-            logger.warning("LLM classification failed for chunk %d (falling back to regex): %s", start // batch_size, exc)
-        await asyncio.sleep(0.2)
+            logger.warning(
+                "LLM classification failed for chunk %d (falling back to regex): %s",
+                start // batch_size,
+                exc,
+            )
+            if "401" in str(exc) or "403" in str(exc):
+                logger.error("Authentication failure with LLM provider; stopping classification")
+                break
+        await asyncio.sleep(0.4)
     return analysis

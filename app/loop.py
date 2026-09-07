@@ -134,7 +134,10 @@ def _canonical_identity(sig: CompanySignal) -> str:
     for f in sig.founders:
         if f.lookup_key:
             return f.lookup_key
-    return sig.slug or slugify(sig.name)
+    slug = sig.slug or slugify(sig.name)
+    if slug and slug not in ("unknown", "none"):
+        return slug
+    return sig.url or ""
 
 
 def _directory_key_set(store: Store, source: str) -> set[str]:
@@ -247,7 +250,11 @@ async def run_scan(settings: Settings, store: Store, notifier: SlackNotifier,
     _pending_thread_replies: list[tuple[str, str, str, str]] = []
     for name, sigs in fetched.items():
         if name in ("x", "linkedin", "hn"):
-            sigs = await _filter_social(settings, sigs)
+            candidates = [
+                s for s in sigs
+                if not (store.is_seen(_canonical_identity(s)) or store.is_pending(_canonical_identity(s)))
+            ]
+            sigs = await _filter_social(settings, candidates)
         source_emitted = 0
         for sig in sigs:
             try:

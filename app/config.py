@@ -140,6 +140,10 @@ class Settings(BaseSettings):
         description="Provider search endpoint path (relative to base URL)",
     )
     x_lang: str = Field(default="en", description="Restrict X results to this language")
+    x_lookback_days: int = Field(
+        default=90,
+        description="Max lookback window in days for X search queries (0 = no limit)",
+    )
     serper_api_key: str | None = Field(
         default=None,
         description="Serper.dev key (2,500 free one-off credits) for the free-X discovery chain",

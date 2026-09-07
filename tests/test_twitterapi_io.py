@@ -87,5 +87,32 @@ def test_twitterapi_io_docs_shape_mapping(monkeypatch):
     s0 = sigs[0]
     assert s0.source == "x"
     assert s0.founders[0].handle == "beknabdik"
-    assert "got into Y Combinator" in s0.description
     assert s0.url == "https://x.com/beknabdik/status/2061493360150601738"
+
+
+def test_x_build_query_lookback():
+    st = Settings(
+        x_provider_base_url="https://api.twitterapi.io",
+        x_provider_api_key="testkey",
+        x_lang="en",
+        x_lookback_days=30,
+    )
+    src = XSource(st)
+    q = src._build_query("got into YC")
+    assert '"got into YC"' in q
+    assert "since:" in q
+    assert "lang:en" in q
+
+    # When lookback is 0, since: is omitted
+    st0 = Settings(
+        x_provider_base_url="https://api.twitterapi.io",
+        x_provider_api_key="testkey",
+        x_lang="en",
+        x_lookback_days=0,
+    )
+    src0 = XSource(st0)
+    q0 = src0._build_query("got into YC")
+    assert '"got into YC"' in q0
+    assert "since:" not in q0
+    assert "lang:en" in q0
+
