@@ -177,7 +177,7 @@ async def health():
     return {
         "status": "ok",
         "version": APP_VERSION,
-        "last_scan_at": store.get_state("last_scan_at"),
+        "last_scan_at": store.get_state("last_scan_at") if store else None,
         "playwright_ok": _is_playwright_ok(),
     }
 
