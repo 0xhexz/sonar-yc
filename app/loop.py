@@ -119,6 +119,7 @@ class ScanResult:
     alerts: list[Alert] = field(default_factory=list)
     counts: dict = field(default_factory=dict)
     errors: dict = field(default_factory=dict)
+    fetched: dict = field(default_factory=dict)
 
 
 def _canonical_identity(sig: CompanySignal) -> str:
@@ -344,6 +345,7 @@ async def run_scan(settings: Settings, store: Store, notifier: SlackNotifier,
 
     store.set_state("last_scan_at", result.scanned_at.isoformat())
     result.alerts = emitted
+    result.fetched = fetched
     result.counts = {
         "sources": enabled,
         "signals": {n: len(v) for n, v in fetched.items()},

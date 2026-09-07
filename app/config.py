@@ -191,7 +191,7 @@ class Settings(BaseSettings):
     classify_enabled: bool = Field(default=True, description="Run LLM classification on social signals")
     classify_min_confidence: float = Field(default=0.6, ge=0.0, le=1.0)
     classify_timeout: int = Field(default=30, description="Seconds per LLM classification call")
-    classify_batch_size: int = Field(default=6, description="Posts per LLM classification batch (small for small-context models)")
+    classify_batch_size: int = Field(default=3, description="Posts per LLM classification batch (small for small-context models)")
     social_max_alerts_per_scan: int = Field(
         default=8, description="Cap on social alerts per scan (burst protection); rest are recorded silently"
     )

@@ -62,7 +62,7 @@ def looks_like_founder_signal(text: str) -> bool:
     verb_positions = [
         m.start()
         for m in re.finditer(
-            r"got (into|in|accepted)|accepted|admitted|invited|selected|backed by|made it|we\s*are\s*in|we'?re\s*in|joined\s+the",
+            r"got (into|in|accepted)|accepted|admitted|invited|selected|backed by|made it|we\s*are\s*in|we'?re\s*in|joined\s+the|part\s+of|cohort",
             t,
         )
     ]
@@ -73,23 +73,26 @@ def looks_like_founder_signal(text: str) -> bool:
 CLASSIFY_SYSTEM_PROMPT = """\
 You are a precise analyst for a YC/Speedrun early-detection bot. You read
 Twitter/X or LinkedIn posts and decide whether the AUTHOR is personally
-announcing that THEY or their own company just got accepted into Y Combinator
+announcing that THEY or their own company just ACTUALLY got accepted into Y Combinator
 or a16z Speedrun — i.e. the founder's own announcement, before the accelerator
 officially announced them.
 
 Classify each post into EXACTLY ONE of:
-- "founder_announcement": the author says they/their own company GOT IN (e.g.
-  "i got into YC!", "we're in YC S26", "so proud to say we're backed by Y
-  Combinator", "we got into the Speedrun batch"). Gold signal.
+- "founder_announcement": the author genuinely announces that THEY or their own company
+  ACTUALLY got accepted into Y Combinator or a16z Speedrun (e.g. "i got into YC!",
+  "we're in YC S26", "so proud to say we're backed by Y Combinator", "we got into Speedrun").
+  MUST be an actual, genuine acceptance. DO NOT classify clickbait or metaphorical statements
+  (e.g. "We got into YC! Not officially", "We did not get in", "mock interview") as
+  founder_announcement — classify those as third_party.
 - "founder_applied": author applied, made an application, is waiting/aspiring
   ("just applied", "application video", "hoping to get in").
-- "third_party": news, press, job posts, criticism, politics, or comments ABOUT
-  YC by someone who is not announcing their own acceptance (e.g. "Y Combinator
-  is ...", "YC W19's X just...", "hiring at a YC startup").
+- "third_party": news, press, job posts, criticism, politics, clickbait ("not officially"),
+  advisor mock interviews, or comments ABOUT YC by someone who is not announcing their own
+  actual acceptance (e.g. "Y Combinator is ...", "YC W19's X just...", "hiring at a YC startup").
 - "unrelated": does not concern YC/Speedrun acceptance at all.
 
 Return ONLY a JSON ARRAY with EXACTLY these keys per object:
-{"id":"<id>","label":"founder_announcement|founder_applied|third_party|unrelated","company_name":"<if identifiable else "">","batch":"<S26 or SR005 if mentioned else "">","confidence":0.0,"reasoning":"<1 sentence>"}
+{"id":"<id>","label":"founder_announcement|founder_applied|third_party|unrelated","company_name":"<if identifiable else \"\">","batch":"<S26 or SR005 if mentioned else \"\">","confidence":0.0,"reasoning":"<1 sentence>"}
 
 Example: [{"id":"1","text":"big news: i got into Y Combinator!","author":"bek"}] ->
 [{"id":"1","label":"founder_announcement","company_name":"","batch":"","confidence":0.98,"reasoning":"author announces own acceptance"}]
@@ -175,6 +178,7 @@ async def _chat(settings: Settings, messages: list[dict]) -> str:
         "model": settings.llm_model,
         "messages": messages,
         "temperature": 0.0,
+        "max_tokens": 600,
     }
     headers = {"Authorization": f"Bearer {settings.llm_api_key or 'none'}"}
     last_exc: Exception | None = None
@@ -306,5 +310,5 @@ async def classify_batch(settings: Settings, items: list[dict]) -> dict[str, Fou
         except Exception as exc:  # noqa: BLE001
             failed_once = True
             logger.warning("LLM classification failed for chunk %d (falling back to regex): %s", start // batch_size, exc)
-        await asyncio.sleep(0.4)
+        await asyncio.sleep(1.0)
     return analysis
