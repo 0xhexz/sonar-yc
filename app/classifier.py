@@ -178,7 +178,6 @@ async def _chat(settings: Settings, messages: list[dict]) -> str:
         "model": settings.llm_model,
         "messages": messages,
         "temperature": 0.0,
-        "max_tokens": 600,
     }
     headers = {"Authorization": f"Bearer {settings.llm_api_key or 'none'}"}
     last_exc: Exception | None = None
@@ -310,5 +309,5 @@ async def classify_batch(settings: Settings, items: list[dict]) -> dict[str, Fou
         except Exception as exc:  # noqa: BLE001
             failed_once = True
             logger.warning("LLM classification failed for chunk %d (falling back to regex): %s", start // batch_size, exc)
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(0.2)
     return analysis
