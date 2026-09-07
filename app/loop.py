@@ -311,7 +311,16 @@ async def run_scan(settings: Settings, store: Store, notifier: SlackNotifier,
                     logger.debug("could not persist message ts: %s", exc)
         if ok or not notifier.ready:
             # Acknowledged (or dry-run): safe to remember it as reported.
-            store.mark_seen(identity)
+            alert_payload = {
+                "company": alert.company_name,
+                "source": alert.source,
+                "batch": alert.batch,
+                "description": alert.description,
+                "link": alert.link,
+                "founder": (alert.founder.handle if alert.founder else "") or "",
+                "classification": alert.classification,
+            }
+            store.mark_seen(identity, alert_payload)
             store.remove_pending(identity)
             ledgered.add(identity)
     for identity in ledgered:

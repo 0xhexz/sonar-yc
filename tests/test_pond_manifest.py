@@ -60,9 +60,14 @@ def test_slack_channel_alias():
 
 def test_dashboard_and_trailing_slashes():
     with _client() as c:
-        assert c.get("/dashboard").status_code == 200
+        r = c.get("/dashboard")
+        assert r.status_code == 200
+        assert "X (Twitter)" in r.text
+        assert "LinkedIn" in r.text
+        assert "Recent Social Signals" in r.text
         assert c.get("/dashboard/").status_code == 200
         assert c.get("/health/").status_code == 200
         assert c.get("/favicon.ico").status_code == 204
+
 
 

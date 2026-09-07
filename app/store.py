@@ -92,6 +92,8 @@ class StoreBase(ABC):
     def seen_count(self) -> int: ...
     @abstractmethod
     def recent_directory(self, limit: int = 8) -> list[dict]: ...
+    def recent_social_signals(self, limit: int = 10) -> list[dict]:
+        return []
     @abstractmethod
     def close(self) -> None: ...
 
@@ -267,6 +269,23 @@ class Store(StoreBase):
             {"source": r[0], "slug": r[1], "payload": r[2], "updated_at": r[3]}
             for r in rows
         ]
+
+    def recent_social_signals(self, limit: int = 10) -> list[dict]:
+        rows = self._conn.execute(
+            "SELECT dedup_key, payload, created_at FROM seen "
+            "WHERE payload != '{}' AND payload != '' "
+            "ORDER BY created_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        results = []
+        for r in rows:
+            try:
+                p = json.loads(r["payload"]) if isinstance(r["payload"], str) else (r["payload"] or {})
+                if p:
+                    results.append({"key": r["dedup_key"], "payload": p, "created_at": r["created_at"]})
+            except Exception:
+                pass
+        return results
 
     def close(self) -> None:
         with _LOCK:
